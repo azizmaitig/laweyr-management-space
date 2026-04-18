@@ -1,0 +1,17 @@
+@if (series.length === 0) {
+  <p class="empty">لا توجد بيانات كافية لعرض الرسم.</p>
+} @else {
+  <div class="bars">
+    @for (p of series; track p.label) {
+      <div class="bar-row">
+        <span class="bar-row__label">{{ p.label }}</span>
+        <div class="bar-row__track">
+          <div
+            class="bar-row__fill"
+            [style.width.%]="(p.amount / max()) * 100"></div>
+        </div>
+        <span class="bar-row__value">{{ p.amount | number: '1.0-0' }}</span>
+      </div>
+    }
+  </div>
+}

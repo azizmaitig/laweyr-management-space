@@ -1,0 +1,185 @@
+<div class="sp">
+  <aside class="sp__sidebar">
+    <div class="sp__sidebar-head">
+      <div class="sp__title">Settings</div>
+      <div class="sp__subtitle">Premium workspace controls</div>
+    </div>
+
+    <app-settings-sidebar
+      [items]="categories"
+      [selectedId]="selected()"
+      (selectId)="selectCategory($event)"
+    />
+  </aside>
+
+  <section class="sp__panel">
+    <div class="sp__panel-head">
+      <div class="sp__panel-title">{{ categories.find(c => c.id === selected())?.label }}</div>
+      <div class="sp__panel-desc">{{ categories.find(c => c.id === selected())?.desc }}</div>
+    </div>
+
+    @if (selected() === 'appearance') {
+      <div class="sp__grid">
+        <app-settings-card title="Theme" subtitle="Choose a theme preset">
+          <app-theme-selector
+            [themes]="(themeConfig$ | async) ?? []"
+            [selected]="appTheme()"
+            (selectTheme)="selectTheme($event)"
+          />
+        </app-settings-card>
+
+        <app-settings-card title="Dark mode" subtitle="Instantly applies across the app">
+          <div class="row">
+            <div class="row__info">
+              <div class="row__label">Toggle</div>
+              <div class="row__hint">Switch between light and dark.</div>
+            </div>
+            <app-toggle-switch
+              [checked]="isDark()"
+              [label]="isDark() ? 'Dark' : 'Light'"
+              iconOn="🌙"
+              iconOff="☀️"
+              (checkedChange)="toggleDarkMode()"
+            />
+          </div>
+        </app-settings-card>
+
+        <app-settings-card title="Primary color" subtitle="Used for accents and buttons">
+          <div class="row">
+            <div class="row__info">
+              <div class="row__label">Palette</div>
+              <div class="row__hint">Live preview updates immediately.</div>
+            </div>
+            <app-color-picker
+              [swatches]="colorSwatches"
+              [selectedColor]="primaryColor()"
+              (selectColor)="setPrimaryColor($event)"
+            />
+          </div>
+        </app-settings-card>
+
+        <app-settings-card title="Font size" subtitle="Comfortable reading across the UI">
+          <div class="seg">
+            <button type="button" class="seg__btn" [class.is-active]="fontSize() === 'SMALL'" (click)="setFontSize('SMALL')">Small</button>
+            <button type="button" class="seg__btn" [class.is-active]="fontSize() === 'MEDIUM'" (click)="setFontSize('MEDIUM')">Medium</button>
+            <button type="button" class="seg__btn" [class.is-active]="fontSize() === 'LARGE'" (click)="setFontSize('LARGE')">Large</button>
+          </div>
+        </app-settings-card>
+      </div>
+    }
+
+    @if (selected() === 'notifications') {
+      <div class="sp__grid">
+        <app-settings-card title="Notifications" subtitle="Pick what you want to receive">
+          <div class="list">
+            <div class="list__item">
+              <div class="list__info">
+                <div class="list__label">Email notifications</div>
+                <div class="list__hint">Receive important updates by email.</div>
+              </div>
+              <app-toggle-switch
+                [checked]="(userSettings()?.notifications?.email ?? true)"
+                (checkedChange)="setNotification('email', $event)"
+              />
+            </div>
+
+            <div class="list__item">
+              <div class="list__info">
+                <div class="list__label">In‑app notifications</div>
+                <div class="list__hint">Real‑time alerts inside the workspace.</div>
+              </div>
+              <app-toggle-switch
+                [checked]="(userSettings()?.notifications?.inApp ?? true)"
+                (checkedChange)="setNotification('inApp', $event)"
+              />
+            </div>
+
+            <div class="list__item">
+              <div class="list__info">
+                <div class="list__label">Deadline alerts</div>
+                <div class="list__hint">Notify when deadlines are approaching.</div>
+              </div>
+              <app-toggle-switch
+                [checked]="(userSettings()?.notifications?.deadlines ?? true)"
+                (checkedChange)="setNotification('deadlines', $event)"
+              />
+            </div>
+
+            <div class="list__item">
+              <div class="list__info">
+                <div class="list__label">Session reminders</div>
+                <div class="list__hint">Court session reminder notifications.</div>
+              </div>
+              <app-toggle-switch
+                [checked]="(userSettings()?.notifications?.deadlines ?? true)"
+                (checkedChange)="setNotification('deadlines', $event)"
+              />
+            </div>
+          </div>
+        </app-settings-card>
+      </div>
+    }
+
+    @if (selected() === 'preferences') {
+      <div class="sp__grid">
+        <app-settings-card title="Compact mode" subtitle="Reduce spacing for dense screens">
+          <div class="row">
+            <div class="row__info">
+              <div class="row__label">Layout density</div>
+              <div class="row__hint">Makes lists and tables more compact.</div>
+            </div>
+            <app-toggle-switch
+              [checked]="(compactMode$ | async) === 'ON'"
+              (checkedChange)="toggleCompact($event)"
+            />
+          </div>
+        </app-settings-card>
+
+        <app-settings-card title="Language" subtitle="Optional">
+          <div class="hint">Use the language switcher in the header.</div>
+        </app-settings-card>
+
+        <app-settings-card title="Default dashboard view" subtitle="Example binding">
+          <div class="hint">Coming soon.</div>
+        </app-settings-card>
+      </div>
+    }
+
+    @if (selected() === 'team') {
+      <div class="sp__grid sp__grid--full">
+        <app-settings-card title="Users & authorization" subtitle="Manage sub‑accounts, roles and permissions">
+          <app-sub-accounts-settings />
+        </app-settings-card>
+      </div>
+    }
+
+    @if (selected() === 'system') {
+      <div class="sp__grid">
+        <app-settings-card title="Backups" subtitle="Status and manual runs">
+          <div class="sys">
+            <div class="sys__row">
+              <div class="sys__k">Last backup</div>
+              <div class="sys__v">
+                @if (lastBackup()) {
+                  {{ lastBackup() | date:'medium' }}
+                } @else {
+                  —
+                }
+              </div>
+            </div>
+            <div class="sys__row">
+              <div class="sys__k">Status</div>
+              <div class="sys__v">
+                <span class="pill" [attr.data-status]="backupStatus()">{{ backupStatus() }}</span>
+              </div>
+            </div>
+            <div class="sys__actions">
+              <button type="button" class="btn" (click)="runBackupNow()">Run backup now</button>
+            </div>
+          </div>
+        </app-settings-card>
+      </div>
+    }
+  </section>
+</div>
+

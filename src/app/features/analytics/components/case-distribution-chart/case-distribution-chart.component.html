@@ -1,0 +1,18 @@
+@if (slices.length === 0) {
+  <p class="empty">لا توجد بيانات.</p>
+} @else {
+  <div class="dist">
+    @for (s of slices; track s.type) {
+      <div class="dist__row">
+        <span class="dist__label">{{ s.label }}</span>
+        <div class="dist__track">
+          <div
+            class="dist__fill"
+            [style.width.%]="s.percent"
+            [style.background]="s.color"></div>
+        </div>
+        <span class="dist__meta">{{ s.count }} ({{ s.percent }}%)</span>
+      </div>
+    }
+  </div>
+}

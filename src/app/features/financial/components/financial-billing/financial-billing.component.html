@@ -1,0 +1,245 @@
+<div class="fb" dir="rtl">
+  <header class="fb__header">
+    <div>
+      <h2>المالية والفوترة</h2>
+      <p>فواتير، وقت، مصاريف — متصلة بحالة التطبيق والأحداث (CASE_SELECTED)</p>
+    </div>
+    @if (loading$ | async) {
+      <span class="fb__loading">جاري التحميل…</span>
+    }
+  </header>
+
+  @if (error$ | async; as err) {
+    @if (err) {
+      <div class="fb__alert fb__alert--error" role="alert">{{ err }}</div>
+    }
+  }
+
+  <section class="fb__context card">
+    <label class="fb__label" for="fb-case">الملف النشط</label>
+    <div class="fb__context-row">
+      <select
+        id="fb-case"
+        class="fb__select"
+        [value]="(selectedCase$ | async)?.id ?? ''"
+        (change)="onSelectCase($any($event.target).value)">
+        <option value="">— اختر ملفاً —</option>
+        @for (c of casesForPicker(casesList$ | async); track c.id) {
+          <option [value]="c.id">{{ c.title }} — {{ c.clientName }}</option>
+        }
+      </select>
+      @if (selectedCase$ | async; as sc) {
+        <span class="fb__context-meta">العميل: {{ sc.clientName }}</span>
+      }
+    </div>
+    @if (filterClientName(); as fname) {
+      @if ((casesList$ | async)?.length && casesForPicker(casesList$ | async).length === 0) {
+        <p class="fb__filter-warn">لا ملفات للعميل «{{ fname }}» في القائمة الحالية (تحقق من تحميل الملفات من الخادم).</p>
+      }
+    }
+  </section>
+
+  @if (selectedCase$ | async; as sc) {
+    @let clientId = (selectedClient$ | async)?.id ?? 0;
+    @let invs = (invoices$ | async) ?? [];
+    @let totals = invoiceTotals(invs);
+
+    <div class="stats-row">
+      <div class="stat-card stat-card--navy">
+        <div class="stat-card__info">
+          <span class="stat-card__label">إجمالي الفواتير</span>
+          <span class="stat-card__value">{{ totals.total | number: '1.2-2' }} <small>د.ت</small></span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--green">
+        <div class="stat-card__info">
+          <span class="stat-card__label">المدفوع (فواتير)</span>
+          <span class="stat-card__value">{{ totals.paid | number: '1.2-2' }} <small>د.ت</small></span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--teal">
+        <div class="stat-card__info">
+          <span class="stat-card__label">الوقت (مرحّل للفوترة)</span>
+          <span class="stat-card__value">{{ (billable$ | async) ?? 0 | number: '1.2-2' }} <small>د.ت</small></span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <div class="stat-card__info">
+          <span class="stat-card__label">المصاريف (الملف)</span>
+          <span class="stat-card__value">{{ (caseExpenseTotal$ | async) ?? 0 | number: '1.2-2' }} <small>د.ت</small></span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="fb__tabs" aria-label="أقسام المالية">
+      <button type="button" class="fb__tab" [class.fb__tab--active]="activeTab === 'invoices'" (click)="activeTab = 'invoices'">الفواتير</button>
+      <button type="button" class="fb__tab" [class.fb__tab--active]="activeTab === 'time'" (click)="activeTab = 'time'">الوقت</button>
+      <button type="button" class="fb__tab" [class.fb__tab--active]="activeTab === 'expenses'" (click)="activeTab = 'expenses'">المصاريف</button>
+    </nav>
+
+    @if (activeTab === 'invoices') {
+      <div class="fb__panel card">
+        <h3 class="fb__panel-title">فاتورة جديدة</h3>
+        <div class="fb__form-grid">
+          <input class="fb__input" type="text" placeholder="رقم الفاتورة" [(ngModel)]="invoiceNumber" />
+          <input class="fb__input" type="number" placeholder="المبلغ" [(ngModel)]="invoiceAmount" />
+          <input class="fb__input" type="date" [(ngModel)]="invoiceIssued" />
+          <input class="fb__input" type="date" [(ngModel)]="invoiceDue" />
+          <button type="button" class="btn btn--primary" (click)="createInvoice(sc.id, clientId)">إنشاء (مسودة)</button>
+        </div>
+
+        <h3 class="fb__panel-title fb__panel-title--spaced">الفواتير</h3>
+        <div class="fb__table-wrap">
+          <table class="fb__table">
+            <thead>
+              <tr>
+                <th>الرقم</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+                <th>الإصدار</th>
+                <th>الاستحقاق</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (inv of invs; track inv.id) {
+                <tr>
+                  <td>{{ inv.number }}</td>
+                  <td>{{ inv.amount | number: '1.2-2' }}</td>
+                  <td>
+                    <span class="fb__badge" [attr.data-status]="inv.status">{{ invoiceStatusLabels[inv.status] }}</span>
+                  </td>
+                  <td>{{ inv.issuedAt | date: 'shortDate' }}</td>
+                  <td>{{ inv.dueDate | date: 'shortDate' }}</td>
+                  <td class="fb__actions">
+                    @if (inv.status === 'DRAFT') {
+                      <button type="button" class="btn btn--sm btn--outline" (click)="sendInvoice(inv.id)">إرسال</button>
+                    }
+                    @if (inv.status === 'SENT' || inv.status === 'OVERDUE') {
+                      <button type="button" class="btn btn--sm btn--primary" (click)="markPaid(inv.id)">تسديد</button>
+                    }
+                    <button type="button" class="btn btn--sm btn--danger" (click)="removeInvoice(inv.id)">حذف</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="fb__empty">لا توجد فواتير لهذا الملف.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab === 'time') {
+      <div class="fb__panel card">
+        <h3 class="fb__panel-title">مؤقت</h3>
+        @if (activeTimer$ | async; as tm) {
+          <div class="fb__timer-active">
+            <p>تسجيل جارٍ — الملف #{{ tm.caseId }} · {{ tm.hourlyRate }} د.ت/س</p>
+            <button type="button" class="btn btn--primary" (click)="stopTimer()">إيقاف وحفظ</button>
+          </div>
+        } @else {
+          <div class="fb__form-grid">
+            <input class="fb__input" type="number" placeholder="الأجر بالساعة" [(ngModel)]="timerHourlyRate" />
+            <input class="fb__input" type="text" placeholder="وصف (اختياري)" [(ngModel)]="timerDescription" />
+            <button type="button" class="btn btn--outline" (click)="startTimer(sc.id, clientId)">بدء</button>
+          </div>
+        }
+
+        <h3 class="fb__panel-title fb__panel-title--spaced">إدخال يدوي</h3>
+        <div class="fb__form-grid">
+          <input class="fb__input" type="text" placeholder="الوصف" [(ngModel)]="timeDescription" />
+          <input class="fb__input" type="number" placeholder="الدقائق" [(ngModel)]="timeDuration" />
+          <input class="fb__input" type="number" placeholder="الأجر بالساعة" [(ngModel)]="timeHourlyRate" />
+          <button type="button" class="btn btn--primary" (click)="createManualTimeEntry(sc.id, clientId)">إضافة</button>
+        </div>
+
+        <h3 class="fb__panel-title fb__panel-title--spaced">السجلات</h3>
+        <div class="fb__table-wrap">
+          <table class="fb__table">
+            <thead>
+              <tr>
+                <th>الوصف</th>
+                <th>الدقائق</th>
+                <th>السعر/س</th>
+                <th>المبلغ</th>
+                <th>التاريخ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (e of (timeEntries$ | async) ?? []; track e.id) {
+                <tr>
+                  <td>{{ e.description }}</td>
+                  <td>{{ e.duration }}</td>
+                  <td>{{ e.hourlyRate | number: '1.2-2' }}</td>
+                  <td>{{ e.amount | number: '1.2-2' }}</td>
+                  <td>{{ e.createdAt | date: 'short' }}</td>
+                  <td>
+                    <button type="button" class="btn btn--sm btn--danger" (click)="removeTimeEntry(e.id)">حذف</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="fb__empty">لا توجد مدخلات وقت.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeTab === 'expenses') {
+      <div class="fb__panel card">
+        <h3 class="fb__panel-title">مصروف جديد</h3>
+        <div class="fb__form-grid">
+          <select class="fb__select" [(ngModel)]="expenseCategory">
+            @for (cat of expenseCategories; track cat) {
+              <option [ngValue]="cat">{{ expenseCategoryLabels[cat] }}</option>
+            }
+          </select>
+          <input class="fb__input" type="number" placeholder="المبلغ" [(ngModel)]="expenseAmount" />
+          <input class="fb__input" type="date" [(ngModel)]="expenseDate" />
+          <button type="button" class="btn btn--primary" (click)="addExpense(sc.id, clientId)">إضافة</button>
+        </div>
+
+        <h3 class="fb__panel-title fb__panel-title--spaced">المصاريف</h3>
+        <div class="fb__table-wrap">
+          <table class="fb__table">
+            <thead>
+              <tr>
+                <th>الفئة</th>
+                <th>المبلغ</th>
+                <th>التاريخ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (ex of (expenses$ | async) ?? []; track ex.id) {
+                <tr>
+                  <td>{{ expenseCategoryLabels[ex.category] }}</td>
+                  <td>{{ ex.amount | number: '1.2-2' }}</td>
+                  <td>{{ ex.date | date: 'shortDate' }}</td>
+                  <td>
+                    <button type="button" class="btn btn--sm btn--danger" (click)="removeExpense(ex.id)">حذف</button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="4" class="fb__empty">لا توجد مصاريف.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="fb__hint card">
+      <p>اختر ملفاً من القائمة أعلاه لتحميل الفواتير والوقت والمصاريف (نفس منطق <code>CASE_SELECTED</code> في خدمات الحالة).</p>
+    </div>
+  }
+</div>

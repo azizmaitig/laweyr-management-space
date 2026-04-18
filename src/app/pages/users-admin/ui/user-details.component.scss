@@ -1,0 +1,61 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 22px rgba(15, 23, 42, 0.08);
+}
+
+.panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.id {
+  color: #64748b;
+  font-size: 0.72rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+label {
+  font-size: 0.7rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.value {
+  font-size: 0.84rem;
+  color: #0f172a;
+}
+
+.input {
+  border: none;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 0.55rem 0.65rem;
+  font: inherit;
+}
+
+.muted {
+  color: #64748b;
+}
+
+.empty {
+  font-size: 0.8rem;
+  color: #64748b;
+  text-align: center;
+  padding: 2rem 1rem;
+}

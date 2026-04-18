@@ -1,0 +1,47 @@
+<section class="panel">
+  <header class="panel__head">
+    <h3>Users</h3>
+    <span class="count">{{ filteredUsers.length }}</span>
+  </header>
+
+  <div class="filters">
+    <input
+      class="search"
+      type="search"
+      placeholder="Search by name or email"
+      [(ngModel)]="searchTerm"
+    />
+    <select class="role-filter" [(ngModel)]="selectedRole">
+      @for (role of roleFilters; track role) {
+        <option [ngValue]="role">
+          {{ role === 'ALL' ? 'All roles' : roleLabel(role) }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="users">
+    @for (user of filteredUsers; track user.id) {
+      <button
+        type="button"
+        class="user-row"
+        [class.user-row--selected]="selectedUserId === user.id"
+        (click)="userSelected.emit(user.id)"
+      >
+        <span class="avatar">{{ initials(user.name) }}</span>
+        <span class="meta">
+          <span class="name">{{ user.name }}</span>
+          <span class="email">{{ user.email }}</span>
+        </span>
+        <span class="side">
+          <span class="badge" [class]="roleClass(user.role)">{{ roleLabel(user.role) }}</span>
+          <span class="status" [class.status--active]="isActive(user)">
+            {{ isActive(user) ? 'Active' : 'Inactive' }}
+          </span>
+        </span>
+      </button>
+    } @empty {
+      <div class="empty">No users found.</div>
+    }
+  </div>
+</section>

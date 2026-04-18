@@ -1,0 +1,152 @@
+/**
+ * ONAT Design System - Shared Component Styles
+ * 
+ * Import this mixin in any component that needs standardized styles.
+ * Usage: @include component-base();
+ */
+
+@mixin component-base {
+  // Consistent scrollbar styling
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--clr-border);
+    border-radius: var(--radius-full);
+
+    &:hover {
+      background: var(--clr-text-muted);
+    }
+  }
+
+  // Focus outline for accessibility
+  :focus-visible {
+    outline: 2px solid var(--clr-primary);
+    outline-offset: 2px;
+  }
+}
+
+@mixin card-base {
+  background: var(--clr-white);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  transition: all var(--transition);
+
+  &:hover {
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@mixin list-item-base {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-lg);
+  background: var(--clr-white);
+  transition: all var(--transition);
+
+  &:hover {
+    box-shadow: var(--shadow-sm);
+    border-color: var(--clr-border-light);
+  }
+}
+
+@mixin action-button-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+
+  &:hover {
+    background: var(--clr-secondary-light);
+    color: var(--clr-secondary);
+  }
+
+  &--danger:hover {
+    background: var(--clr-primary-light);
+    color: var(--clr-error);
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+@mixin title-base {
+  font-size: var(--text-md);
+  font-weight: var(--font-semibold);
+  color: var(--clr-secondary);
+  margin: 0;
+  line-height: var(--leading-tight);
+}
+
+@mixin subtitle-base {
+  font-size: var(--text-sm);
+  color: var(--clr-text-muted);
+  line-height: var(--leading-normal);
+}
+
+@mixin empty-state-base {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-8);
+  color: var(--clr-text-muted);
+  text-align: center;
+
+  svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: var(--space-4);
+    opacity: 0.35;
+  }
+
+  p {
+    font-size: var(--text-md);
+    margin: 0;
+  }
+}
+
+@mixin scrollable-container-base {
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  // Custom scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--clr-border);
+    border-radius: var(--radius-full);
+
+    &:hover {
+      background: var(--clr-text-muted);
+    }
+  }
+}

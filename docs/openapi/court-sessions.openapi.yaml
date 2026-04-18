@@ -1,0 +1,622 @@
+openapi: 3.0.3
+info:
+  title: ONAT — Court sessions & hearings API
+  description: >
+    REST contract for court sessions, preparations, outcomes, and deadlines.
+    Merge under your main OpenAPI spec or serve standalone.
+    Angular client base URL is environment.apiUrl (e.g. http://localhost:8080/api).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local (matches environment.ts apiUrl)
+  - url: /api
+    description: Same-origin production (relative)
+
+tags:
+  - name: court-sessions
+  - name: session-preparations
+  - name: session-outcomes
+  - name: deadlines
+
+components:
+  schemas:
+    SessionStatus:
+      type: string
+      enum: [UPCOMING, COMPLETED, POSTPONED]
+
+    Session:
+      type: object
+      required: [id, caseId, date, court, status]
+      properties:
+        id:
+          type: integer
+          format: int64
+        caseId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date-time
+        court:
+          type: string
+        type:
+          type: string
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        nextSessionDate:
+          type: string
+          format: date-time
+
+    SessionCreate:
+      type: object
+      required: [caseId, date, court, status]
+      properties:
+        caseId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date-time
+        court:
+          type: string
+        type:
+          type: string
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        nextSessionDate:
+          type: string
+          format: date-time
+
+    SessionUpdate:
+      type: object
+      properties:
+        caseId:
+          type: integer
+          format: int64
+        date:
+          type: string
+          format: date-time
+        court:
+          type: string
+        type:
+          type: string
+        status:
+          $ref: '#/components/schemas/SessionStatus'
+        nextSessionDate:
+          type: string
+          format: date-time
+
+    SessionPreparation:
+      type: object
+      required: [id, sessionId, checklist, notes, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        sessionId:
+          type: integer
+          format: int64
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    SessionPreparationCreate:
+      type: object
+      required: [sessionId, checklist, notes]
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+          description: Optional; server may ignore and set createdAt.
+
+    SessionPreparationUpdate:
+      type: object
+      properties:
+        checklist:
+          type: array
+          items:
+            type: string
+        notes:
+          type: string
+        sessionId:
+          type: integer
+          format: int64
+        createdAt:
+          type: string
+          format: date-time
+
+    SessionOutcomeResult:
+      type: string
+      enum: [POSTPONED, PARTIAL_JUDGMENT, FINAL_JUDGMENT, APPEAL]
+
+    SessionOutcome:
+      type: object
+      required: [id, sessionId, result, summary, createdAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+        sessionId:
+          type: integer
+          format: int64
+        result:
+          $ref: '#/components/schemas/SessionOutcomeResult'
+        summary:
+          type: string
+        nextSessionDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    SessionOutcomeCreate:
+      type: object
+      required: [sessionId, result, summary]
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        result:
+          $ref: '#/components/schemas/SessionOutcomeResult'
+        summary:
+          type: string
+        nextSessionDate:
+          type: string
+          format: date-time
+
+    SessionOutcomeUpdate:
+      type: object
+      properties:
+        sessionId:
+          type: integer
+          format: int64
+        result:
+          $ref: '#/components/schemas/SessionOutcomeResult'
+        summary:
+          type: string
+        nextSessionDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    DeadlineType:
+      type: string
+      enum: [LEGAL, CUSTOM]
+
+    DeadlinePriority:
+      type: string
+      enum: [LOW, MEDIUM, HIGH]
+
+    Deadline:
+      type: object
+      required: [id, caseId, title, dueDate, type, priority, notifiedLevels]
+      properties:
+        id:
+          type: integer
+          format: int64
+        caseId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        type:
+          $ref: '#/components/schemas/DeadlineType'
+        priority:
+          $ref: '#/components/schemas/DeadlinePriority'
+        notifiedLevels:
+          type: array
+          items:
+            type: integer
+          example: [7, 3, 1]
+          description: Day offsets for client-side alert tiers (7d / 3d / 24h semantics in app).
+
+    DeadlineCreate:
+      type: object
+      required: [caseId, title, dueDate, type, priority, notifiedLevels]
+      properties:
+        caseId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        type:
+          $ref: '#/components/schemas/DeadlineType'
+        priority:
+          $ref: '#/components/schemas/DeadlinePriority'
+        notifiedLevels:
+          type: array
+          items:
+            type: integer
+
+    DeadlineUpdate:
+      type: object
+      properties:
+        caseId:
+          type: integer
+          format: int64
+        title:
+          type: string
+        dueDate:
+          type: string
+          format: date-time
+        type:
+          $ref: '#/components/schemas/DeadlineType'
+        priority:
+          $ref: '#/components/schemas/DeadlinePriority'
+        notifiedLevels:
+          type: array
+          items:
+            type: integer
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+        status:
+          type: integer
+        details:
+          type: object
+
+paths:
+  /court-sessions/case/{caseId}:
+    get:
+      tags: [court-sessions]
+      summary: List sessions by case
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Session'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /court-sessions/{id}:
+    get:
+      tags: [court-sessions]
+      summary: Get session by id
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: Not found
+    put:
+      tags: [court-sessions]
+      summary: Update session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionUpdate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+    delete:
+      tags: [court-sessions]
+      summary: Delete session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No content
+        '200':
+          description: OK (empty)
+
+  /court-sessions:
+    post:
+      tags: [court-sessions]
+      summary: Create session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+
+  /session-preparations/case/{caseId}:
+    get:
+      tags: [session-preparations]
+      summary: List preparations by case
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionPreparation'
+
+  /session-preparations/{id}:
+    put:
+      tags: [session-preparations]
+      summary: Update preparation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionPreparationUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionPreparation'
+    delete:
+      tags: [session-preparations]
+      summary: Delete preparation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No content
+
+  /session-preparations:
+    post:
+      tags: [session-preparations]
+      summary: Create preparation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionPreparationCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionPreparation'
+
+  /session-outcomes/case/{caseId}:
+    get:
+      tags: [session-outcomes]
+      summary: List outcomes by case
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SessionOutcome'
+
+  /session-outcomes/{id}:
+    put:
+      tags: [session-outcomes]
+      summary: Update outcome
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionOutcomeUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionOutcome'
+    delete:
+      tags: [session-outcomes]
+      summary: Delete outcome
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No content
+
+  /session-outcomes:
+    post:
+      tags: [session-outcomes]
+      summary: Create outcome
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionOutcomeCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionOutcome'
+
+  /deadlines/case/{caseId}:
+    get:
+      tags: [deadlines]
+      summary: List deadlines by case
+      parameters:
+        - name: caseId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Deadline'
+
+  /deadlines/{id}:
+    put:
+      tags: [deadlines]
+      summary: Update deadline
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeadlineUpdate'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deadline'
+    delete:
+      tags: [deadlines]
+      summary: Delete deadline
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: No content
+
+  /deadlines:
+    post:
+      tags: [deadlines]
+      summary: Create deadline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeadlineCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Deadline'

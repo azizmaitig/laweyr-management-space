@@ -1,0 +1,21 @@
+<div class="panel">
+  <h4 class="panel__title">إجراءات الملف</h4>
+  <p class="panel__hint">
+    @if (caseId == null) {
+      اختر ملفاً من مساحة العمل لتمكين التصدير والأرشفة.
+    } @else {
+      الملف الحالي: <strong>#{{ caseId }}</strong>
+    }
+  </p>
+  <div class="panel__actions">
+    <button type="button" class="btn btn--primary" [disabled]="caseId == null" (click)="exportPdf()">
+      تصدير PDF
+    </button>
+    <button type="button" class="btn" [disabled]="caseId == null" (click)="exportJson()">
+      تصدير JSON
+    </button>
+    <button type="button" class="btn btn--warn" [disabled]="caseId == null" (click)="archive()">
+      أرشفة الملف
+    </button>
+  </div>
+</div>

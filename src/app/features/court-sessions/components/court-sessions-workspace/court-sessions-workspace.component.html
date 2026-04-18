@@ -1,0 +1,375 @@
+<div class="cs" dir="rtl">
+  <header class="cs__header">
+    <div>
+      <h2>الجلسات والمخاصمات</h2>
+      <p>تجهيز الجلسات، النتائج، والمواعيد القانونية — متصل بحالة التطبيق والأحداث</p>
+    </div>
+    @if (loading$ | async) {
+      <span class="cs__loading">جاري التحميل…</span>
+    }
+  </header>
+
+  @if (error$ | async; as err) {
+    @if (err) {
+      <div class="cs__alert cs__alert--error" role="alert">{{ err }}</div>
+    }
+  }
+
+  <section class="cs__context card">
+    <label class="cs__label" for="cs-case">الملف النشط</label>
+    <div class="cs__context-row">
+      <select
+        id="cs-case"
+        class="cs__select"
+        [value]="(selectedCase$ | async)?.id ?? ''"
+        (change)="onSelectCase($any($event.target).value)">
+        <option value="">— اختر ملفاً —</option>
+        @for (c of casesForPicker(casesList$ | async); track c.id) {
+          <option [value]="c.id">{{ c.title }} — {{ c.clientName }}</option>
+        }
+      </select>
+      @if (selectedCase$ | async; as sc) {
+        <span class="cs__context-meta">المحكمة (الملف): {{ sc.court }}</span>
+      }
+    </div>
+    <p class="cs__deeplink-hint">
+      مزامنة مع بقية فضاء المحامي: يُحدَّد الملف في عنوان الصفحة عبر
+      <code>?{{ wq.CASE_ID }}=&lt;رقم الملف&gt;</code>
+    </p>
+  </section>
+
+  @if (selectedCase$ | async; as sc) {
+    @let sessions = (sessions$ | async) ?? [];
+    @let swp = (sessionWritePending$ | async) ?? {};
+    @let psp = (preparationSavePending$ | async) ?? {};
+    @let orp = (outcomeRecordPending$ | async) ?? {};
+    @let owp = (outcomeWritePending$ | async) ?? {};
+    @let dwp = (deadlineWritePending$ | async) ?? {};
+    @let today = todaySessions(sessions);
+
+    <div class="stats-row">
+      <div class="stat-card stat-card--navy">
+        <div class="stat-card__info">
+          <span class="stat-card__label">إجمالي الجلسات</span>
+          <span class="stat-card__value">{{ sessions.length }}</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--teal">
+        <div class="stat-card__info">
+          <span class="stat-card__label">قادمة</span>
+          <span class="stat-card__value">{{ upcomingCount(sessions) }}</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--amber">
+        <div class="stat-card__info">
+          <span class="stat-card__label">اليوم</span>
+          <span class="stat-card__value">{{ today.length }}</span>
+        </div>
+      </div>
+      <div class="stat-card stat-card--green">
+        <div class="stat-card__info">
+          <span class="stat-card__label">المواعيد النشطة</span>
+          <span class="stat-card__value">{{ (deadlines$ | async)?.length ?? 0 }}</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="cs__tabs" aria-label="أقسام الجلسات">
+      <button
+        type="button"
+        class="cs__tab"
+        [class.cs__tab--active]="activeTab === 'sessions'"
+        (click)="activeTab = 'sessions'">
+        الجلسات
+      </button>
+      <button
+        type="button"
+        class="cs__tab"
+        [class.cs__tab--active]="activeTab === 'preparation'"
+        (click)="activeTab = 'preparation'">
+        التحضير
+      </button>
+      <button
+        type="button"
+        class="cs__tab"
+        [class.cs__tab--active]="activeTab === 'outcomes'"
+        (click)="activeTab = 'outcomes'">
+        النتائج
+      </button>
+      <button
+        type="button"
+        class="cs__tab"
+        [class.cs__tab--active]="activeTab === 'deadlines'"
+        (click)="activeTab = 'deadlines'">
+        المواعيد
+      </button>
+    </nav>
+
+    @if (activeTab === 'sessions') {
+      <div class="cs__panel card">
+        <h3 class="cs__panel-title">جلسة جديدة</h3>
+        <div class="cs__form-grid">
+          <label class="cs__field">
+            <span>التاريخ والوقت</span>
+            <input type="datetime-local" class="cs__input" [(ngModel)]="newSessionDate" />
+          </label>
+          <label class="cs__field">
+            <span>المحكمة</span>
+            <input type="text" class="cs__input" [(ngModel)]="newSessionCourt" placeholder="مثال: ابتدائي تونس" />
+          </label>
+          <label class="cs__field">
+            <span>نوع الجلسة</span>
+            <input type="text" class="cs__input" [(ngModel)]="newSessionType" placeholder="اختياري" />
+          </label>
+          <label class="cs__field">
+            <span>الحالة</span>
+            <select class="cs__select cs__select--inline" [(ngModel)]="newSessionStatus">
+              <option [ngValue]="'UPCOMING'">{{ sessionStatusLabels['UPCOMING'] }}</option>
+              <option [ngValue]="'COMPLETED'">{{ sessionStatusLabels['COMPLETED'] }}</option>
+              <option [ngValue]="'POSTPONED'">{{ sessionStatusLabels['POSTPONED'] }}</option>
+            </select>
+          </label>
+        </div>
+        <button type="button" class="btn btn--primary" (click)="createSession(sc.id)">إضافة الجلسة</button>
+
+        <h3 class="cs__panel-title cs__panel-title--spaced">الجلسات المسجلة</h3>
+        @if (sessions.length === 0) {
+          <p class="cs__empty">لا توجد جلسات لهذا الملف.</p>
+        } @else {
+          <ul class="cs__list">
+            @for (s of sessions; track s.id) {
+              <li
+                class="cs__row"
+                [class.cs__row--pending]="!!sessionRowPending(swp, s.id)">
+                <div class="cs__row-main">
+                  <strong>{{ s.date | date: 'medium' }}</strong>
+                  <span class="cs__badge" [class.cs__badge--done]="s.status === 'COMPLETED'">
+                    {{ sessionStatusLabels[s.status] }}
+                  </span>
+                  @if (sessionRowPending(swp, s.id); as pk) {
+                    <span class="cs__pending-badge" [attr.title]="pk === 'create' ? 'جاري الإنشاء' : 'جاري التحديث'">
+                      {{ pk === 'create' ? 'إنشاء…' : 'تحديث…' }}
+                    </span>
+                  }
+                  <p class="cs__row-meta">{{ s.court }} @if (s.type) { · {{ s.type }} }</p>
+                  @if (s.nextSessionDate) {
+                    <p class="cs__row-sub">موعد لاحق: {{ s.nextSessionDate | date: 'medium' }}</p>
+                  }
+                </div>
+                <div class="cs__row-actions">
+                  <button
+                    type="button"
+                    class="btn btn--sm btn--outline"
+                    [disabled]="!!sessionRowPending(swp, s.id)"
+                    (click)="setSessionStatus(s, 'COMPLETED')">
+                    إكمال
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--sm btn--outline"
+                    [disabled]="!!sessionRowPending(swp, s.id)"
+                    (click)="setSessionStatus(s, 'POSTPONED')">
+                    تأجيل
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn--sm btn--danger"
+                    [disabled]="!!sessionRowPending(swp, s.id)"
+                    (click)="removeSession(s.id)">
+                    حذف
+                  </button>
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    @if (activeTab === 'preparation') {
+      @let prepList = (preparations$ | async) ?? [];
+      <div class="cs__panel card">
+        <h3 class="cs__panel-title">تحضير الجلسة</h3>
+        <p class="cs__hint">سطر لكل بند (وثائق، حجج، شهود…)</p>
+        <label class="cs__field">
+          <span>الجلسة</span>
+          <select
+            class="cs__select"
+            [ngModel]="prepSessionId"
+            (ngModelChange)="onPrepSessionChange($event, prepList)">
+            <option [ngValue]="null">— اختر جلسة —</option>
+            @for (s of confirmedSessions(sessions); track s.id) {
+              <option [ngValue]="s.id">{{ s.date | date: 'short' }} — {{ s.court }}</option>
+            }
+          </select>
+        </label>
+        <label class="cs__field">
+          <span>قائمة التحقق</span>
+          <textarea class="cs__textarea" rows="6" [(ngModel)]="prepChecklistText" placeholder="وثيقة X&#10;شاهد Y"></textarea>
+        </label>
+        <label class="cs__field">
+          <span>ملاحظات</span>
+          <textarea class="cs__textarea" rows="4" [(ngModel)]="prepNotes"></textarea>
+        </label>
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="prepSessionId == null || isPrepSavePending(psp, prepSessionId)"
+          (click)="savePreparation()">
+          @if (isPrepSavePending(psp, prepSessionId)) {
+            جاري الحفظ…
+          } @else {
+            حفظ التحضير
+          }
+        </button>
+      </div>
+    }
+
+    @if (activeTab === 'outcomes') {
+      <div class="cs__panel card">
+        <h3 class="cs__panel-title">تسجيل نتيجة الجلسة</h3>
+        <p class="cs__hint">عند تحديد موعد لاحق، يمكن إنشاء جلسة تلقائياً عبر حدث التطبيق.</p>
+        <label class="cs__field">
+          <span>الجلسة</span>
+          <select class="cs__select" [(ngModel)]="outcomeSessionId">
+            <option [ngValue]="null">— اختر جلسة —</option>
+            @for (s of confirmedSessions(sessions); track s.id) {
+              <option [ngValue]="s.id">{{ s.date | date: 'short' }} — {{ s.court }}</option>
+            }
+          </select>
+        </label>
+        <label class="cs__field">
+          <span>النتيجة</span>
+          <select class="cs__select" [(ngModel)]="outcomeResult">
+            @for (r of outcomeResults; track r) {
+              <option [ngValue]="r">{{ outcomeLabels[r] }}</option>
+            }
+          </select>
+        </label>
+        <label class="cs__field">
+          <span>ملخص</span>
+          <textarea class="cs__textarea" rows="4" [(ngModel)]="outcomeSummary" placeholder="ملخص المخاصمة…"></textarea>
+        </label>
+        <label class="cs__field">
+          <span>موعد الجلسة القادمة (اختياري)</span>
+          <input type="datetime-local" class="cs__input" [(ngModel)]="outcomeNextDate" />
+        </label>
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="
+            outcomeSessionId == null ||
+            !outcomeSummary.trim() ||
+            isOutcomeRecordPending(orp, outcomeSessionId)
+          "
+          (click)="recordOutcome()">
+          @if (isOutcomeRecordPending(orp, outcomeSessionId)) {
+            جاري التسجيل…
+          } @else {
+            تسجيل النتيجة
+          }
+        </button>
+
+        <h3 class="cs__panel-title cs__panel-title--spaced">سجل النتائج</h3>
+        @let outs = (outcomes$ | async) ?? [];
+        @if (outs.length === 0) {
+          <p class="cs__empty">لا توجد نتائج مسجلة بعد.</p>
+        } @else {
+          <ul class="cs__list">
+            @for (o of outs; track o.id) {
+              <li class="cs__row" [class.cs__row--pending]="!!sessionRowPending(owp, o.id)">
+                <div class="cs__row-main">
+                  <strong>{{ outcomeLabels[o.result] }}</strong>
+                  @if (sessionRowPending(owp, o.id); as op) {
+                    <span class="cs__pending-badge">{{ op === 'create' ? 'إنشاء…' : 'تحديث…' }}</span>
+                  }
+                  <span class="cs__muted">جلسة #{{ o.sessionId }}</span>
+                  <p class="cs__row-meta">{{ o.summary }}</p>
+                  @if (o.nextSessionDate) {
+                    <p class="cs__row-sub">لاحقاً: {{ o.nextSessionDate | date: 'medium' }}</p>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+
+    @if (activeTab === 'deadlines') {
+      @let dls = (deadlines$ | async) ?? [];
+      <div class="cs__panel card">
+        <h3 class="cs__panel-title">موعد قانوني أو مخصص</h3>
+        <div class="cs__form-grid">
+          <label class="cs__field cs__field--wide">
+            <span>العنوان</span>
+            <input type="text" class="cs__input" [(ngModel)]="deadlineTitle" placeholder="مثال: آخر أجل للرد" />
+          </label>
+          <label class="cs__field">
+            <span>الاستحقاق</span>
+            <input type="datetime-local" class="cs__input" [(ngModel)]="deadlineDue" />
+          </label>
+          <label class="cs__field">
+            <span>النوع</span>
+            <select class="cs__select" [(ngModel)]="deadlineType">
+              <option [ngValue]="'LEGAL'">{{ deadlineTypeLabels['LEGAL'] }}</option>
+              <option [ngValue]="'CUSTOM'">{{ deadlineTypeLabels['CUSTOM'] }}</option>
+            </select>
+          </label>
+          <label class="cs__field">
+            <span>الأولوية</span>
+            <select class="cs__select" [(ngModel)]="deadlinePriority">
+              <option [ngValue]="'LOW'">{{ priorityLabels['LOW'] }}</option>
+              <option [ngValue]="'MEDIUM'">{{ priorityLabels['MEDIUM'] }}</option>
+              <option [ngValue]="'HIGH'">{{ priorityLabels['HIGH'] }}</option>
+            </select>
+          </label>
+          <label class="cs__field cs__field--wide">
+            <span>تنبيهات (أيام قبل الاستحقاق، مفصولة بفاصلة)</span>
+            <input type="text" class="cs__input" [(ngModel)]="deadlineNotifyLevels" placeholder="7,3,1" />
+          </label>
+        </div>
+        <div class="cs__btn-row">
+          <button type="button" class="btn btn--primary" (click)="addDeadline(sc.id)">إضافة الموعد</button>
+          <button type="button" class="btn btn--outline" (click)="runDeadlineCheck()">فحص التنبيهات الآن</button>
+        </div>
+
+        <h3 class="cs__panel-title cs__panel-title--spaced">المواعيد</h3>
+        @if (dls.length === 0) {
+          <p class="cs__empty">لا توجد مواعيد لهذا الملف.</p>
+        } @else {
+          <ul class="cs__list">
+            @for (d of dls; track d.id) {
+              <li class="cs__row" [class.cs__row--pending]="!!sessionRowPending(dwp, d.id)">
+                <div class="cs__row-main">
+                  <strong>{{ d.title }}</strong>
+                  <span class="cs__badge cs__badge--prio-{{ d.priority.toLowerCase() }}">{{
+                    priorityLabels[d.priority]
+                  }}</span>
+                  @if (sessionRowPending(dwp, d.id); as dk) {
+                    <span class="cs__pending-badge">{{ dk === 'create' ? 'إنشاء…' : 'تحديث…' }}</span>
+                  }
+                  <p class="cs__row-meta">
+                    {{ d.dueDate | date: 'medium' }} · {{ deadlineTypeLabels[d.type] }} · تنبيهات:
+                    {{ d.notifiedLevels.length ? d.notifiedLevels.join(', ') : '—' }}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="btn btn--sm btn--danger"
+                  [disabled]="!!sessionRowPending(dwp, d.id)"
+                  (click)="removeDeadline(d.id)">
+                  حذف
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  } @else {
+    <div class="cs__empty-card card">
+      <p>اختر ملفاً من القائمة أعلاه لعرض الجلسات والتحضير والمواعيد.</p>
+    </div>
+  }
+</div>

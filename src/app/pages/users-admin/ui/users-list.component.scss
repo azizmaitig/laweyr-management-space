@@ -1,0 +1,138 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 22px rgba(15, 23, 42, 0.08);
+}
+
+.panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panel__head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.count {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.filters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.search,
+.role-filter {
+  width: 100%;
+  border: none;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+}
+
+.users {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border: none;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+  padding: 0.6rem;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.user-row:hover {
+  background: #f8fafc;
+}
+
+.user-row--selected {
+  background: #eff6ff;
+}
+
+.avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e2e8f0;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.email {
+  font-size: 0.72rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.side {
+  margin-inline-start: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.badge {
+  font-size: 0.67rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.badge--lawyer { background: #dcfce7; color: #166534; }
+.badge--secretary { background: #dbeafe; color: #1d4ed8; }
+.badge--client { background: #fef9c3; color: #854d0e; }
+.badge--partner { background: #ede9fe; color: #6d28d9; }
+
+.status {
+  font-size: 0.65rem;
+  color: #64748b;
+}
+
+.status--active {
+  color: #16a34a;
+}
+
+.empty {
+  text-align: center;
+  padding: 1.1rem 0.65rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}

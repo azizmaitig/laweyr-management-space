@@ -1,0 +1,12 @@
+---
+description: Config touchpoints (Angular CLI, TS strict, scripts)
+globs: angular.json,package.json,tsconfig*.json
+alwaysApply: false
+---
+
+# Config conventions
+
+- This repo is **strict** TypeScript + **strictTemplates**; don’t relax strictness to “fix” errors—fix the types/templates.
+- Angular CLI schematics default to `scss` and `skipTests: true`; keep that convention unless you intentionally introduce tests.
+- Keep scripts consistent (`start`, `build`, `watch`, `test`) and avoid adding redundant aliases.
+- If changing budgets/build options in `angular.json`, explain why (bundle size / perf / dev ergonomics).

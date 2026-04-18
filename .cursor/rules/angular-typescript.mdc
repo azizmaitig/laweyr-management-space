@@ -1,0 +1,26 @@
+---
+description: Angular + TypeScript conventions (standalone, signals, strict)
+globs: **/*.ts
+alwaysApply: false
+---
+
+# TypeScript / Angular conventions
+
+- Use **standalone** components (`standalone: true`) and explicit `imports: []` like existing pages/components.
+- Prefer `inject()` over constructor DI in services/components unless a file already uses constructors.
+- Prefer **signals** (`signal`, `computed`) for local UI state; call signals in templates as functions (`users()`).
+- For RxJS subscriptions in components, use `takeUntilDestroyed(inject(DestroyRef))` (repo pattern) rather than manual `Subject`.
+- Keep strict typing: avoid `any`; use `type` imports for types (`import type { ... }`) when possible.
+
+## Services structure
+
+- When applicable, keep the split:
+  - `*-api.service.ts`: pure HTTP calls (often extending `ApiService`)
+  - `*-state.service.ts`: BehaviorSubject/store-like state + selectors
+  - `*.service.ts`: light orchestration using signals or calling `*-api/*-state`
+- Don’t swallow errors. Prefer `catchError` that patches error state and returns a safe fallback (see existing `UsersStateService`).
+
+## Interceptors / app init
+
+- Keep provider wiring in `app.config.ts` (interceptors via `provideHttpClient(withInterceptors([...]))`).
+- Feature initialization should remain in `provideAppInitializer` if that’s the existing entry point.

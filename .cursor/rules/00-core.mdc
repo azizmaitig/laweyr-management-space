@@ -1,0 +1,13 @@
+---
+description: Core collaboration rules for this repo
+alwaysApply: true
+---
+
+# Core rules (ONAT Angular)
+
+- Keep diffs small and consistent with existing patterns; do not “re-architect” unless asked.
+- Do not add new dependencies or change build tooling unless explicitly required; explain impact when touching `angular.json`/`tsconfig*`/`package.json`.
+- Prefer Angular 21 patterns already used here: **standalone components**, `inject()`, **signals**, and template control flow (`@if`, etc.).
+- Follow formatting defaults used in this repo: Prettier `printWidth: 100`, `singleQuote: true`, and Angular HTML formatting.
+- When changing behavior, update/adjust call sites and related UI/state flows so the feature remains coherent.
+- Avoid redundant comments; only comment for non-obvious intent or constraints.

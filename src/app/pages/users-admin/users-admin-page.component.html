@@ -1,0 +1,29 @@
+<section class="users-admin">
+  <header class="users-admin__head">
+    <div>
+      <h2>Users & Permissions Admin</h2>
+      <p>Manage roles, granular access matrix, and per-user overrides.</p>
+    </div>
+  </header>
+
+  <div class="users-admin__grid">
+    <app-users-list
+      class="col col--left"
+      [users]="users()"
+      [selectedUserId]="selectedUserId()"
+      (userSelected)="selectUser($event)"
+    />
+
+    <app-user-details
+      class="col col--center"
+      [user]="selectedUser()"
+      (roleChanged)="changeRole($event)"
+    />
+
+    <app-permissions-matrix
+      class="col col--right"
+      [user]="selectedUser()"
+      (saveRequested)="savePermissions($event)"
+    />
+  </div>
+</section>

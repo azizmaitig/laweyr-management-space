@@ -1,0 +1,6 @@
+<div class="kpi" [class]="'kpi--' + variant">
+  <span class="kpi__label">{{ label }}</span>
+  <span class="kpi__value">
+    {{ value ?? '—' }}@if (suffix) {<span class="kpi__suffix">{{ suffix }}</span>}
+  </span>
+</div>

@@ -1,0 +1,129 @@
+<div class="analytics-dashboard">
+  <header class="analytics-dashboard__header">
+    <div>
+      <h1 class="analytics-dashboard__title">لوحة التحليلات والتقارير</h1>
+      <p class="analytics-dashboard__sub">
+        مؤشرات، رسوم بيانية، وتصدير — مرتبطة بـ
+        <code>AnalyticsStateService</code>
+        و
+        <code>ExportStateService</code>
+      </p>
+    </div>
+    <button type="button" class="analytics-dashboard__refresh" (click)="refreshAnalytics()">
+      تحديث البيانات
+    </button>
+  </header>
+
+  @if (caseAnalytics$ | async; as ca) {
+    @if (ca.caseId != null) {
+      <div class="analytics-dashboard__filter-banner" role="status">
+        <span class="analytics-dashboard__filter-text">
+          عرض مفلتر للملف
+          <strong>{{ ca.caseNumber }}</strong>
+          — يتبع <code>?{{ w.CASE_ID }}=</code> مثل باقي فضاء المحامي.
+        </span>
+        <div class="analytics-dashboard__filter-actions">
+          <a
+            class="analytics-dashboard__filter-link"
+            [routerLink]="['/espace-avocat', 'cases']"
+            [queryParams]="caseDeepLinkParams(ca.caseId)"
+            queryParamsHandling="merge"
+            >فتح الملف</a>
+          <button type="button" class="analytics-dashboard__filter-clear" (click)="clearSelectedCase()">
+            إزالة التحديد
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  <div class="analytics-dashboard__grid">
+    <div class="analytics-dashboard__main">
+      @if (globalAnalytics$ | async; as g) {
+        @if (financialAnalytics$ | async; as f) {
+          <!-- TOP: KPIs -->
+          <section class="section section--kpis" aria-label="مؤشرات رئيسية">
+            <app-kpi-card label="معدل النجاح" [value]="g.successRate" suffix="%" variant="teal" />
+            <app-kpi-card
+              label="متوسط مدة الملف (تقديري)"
+              [value]="g.avgCaseDuration"
+              suffix="يوم"
+              variant="blue" />
+            <app-kpi-card label="نسبة التحصيل" [value]="g.collectionRate" suffix="%" variant="green" />
+            <app-kpi-card
+              label="إجمالي الإيرادات"
+              [value]="f.totalRevenue | number: '1.0-0'"
+              suffix="د.ت"
+              variant="indigo" />
+            <app-kpi-card
+              label="إجمالي المصاريف"
+              [value]="f.totalExpenses | number: '1.0-0'"
+              suffix="د.ت"
+              variant="amber" />
+            <app-kpi-card
+              label="صافي الربح"
+              [value]="f.profit | number: '1.0-0'"
+              suffix="د.ت"
+              variant="green" />
+          </section>
+
+          <!-- MIDDLE: charts -->
+          <section class="section section--charts" aria-label="الرسوم البيانية">
+            <app-chart-container title="الإيرادات الشهرية (حسب شهر الجلسة في الملفات)">
+              <app-revenue-chart [series]="f.monthlyRevenue" />
+            </app-chart-container>
+            <app-chart-container title="مقارنة سنوية (إيرادات الأتعاب)">
+              <app-revenue-chart [series]="f.yearlyRevenue" />
+            </app-chart-container>
+            <app-chart-container title="توزيع الملفات حسب النوع">
+              <app-case-distribution-chart [slices]="g.caseTypeDistribution" />
+            </app-chart-container>
+          </section>
+
+          <!-- BOTTOM -->
+          <section class="section section--bottom" aria-label="المدفوعات المتأخرة والنشاط">
+            <app-chart-container title="دفعات متأخرة / أرصدة مستحقة">
+              @if (f.overduePayments.length === 0) {
+                <p class="muted">لا توجد بنود مستحقة ضمن النطاق الحالي.</p>
+              } @else {
+                <ul class="overdue-list">
+                  @for (row of f.overduePayments; track row.id) {
+                    <li class="overdue-list__item">
+                      <span class="overdue-list__main">{{ row.caseNumber }} — {{ row.label }}</span>
+                      <span class="overdue-list__amt">{{ row.amount | number: '1.0-0' }} د.ت</span>
+                      <span class="overdue-list__due">الاستحقاق: {{ row.dueDate }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </app-chart-container>
+
+            <app-chart-container title="ملخص النشاط الأخير (الجدول الزمني)">
+              @if (g.recentActivity.length === 0) {
+                <p class="muted">لا يوجد نشاط في الجدول الزمني لهذا النطاق. افتح ملفاً لتحميل الجدول.</p>
+              } @else {
+                <ul class="activity-list">
+                  @for (a of g.recentActivity; track $index) {
+                    <li class="activity-list__item">
+                      <span class="activity-list__date">{{ a.date }}</span>
+                      <span class="activity-list__title">{{ a.title }}</span>
+                      @if (a.detail) {
+                        <span class="activity-list__detail">{{ a.detail }}</span>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+            </app-chart-container>
+          </section>
+        }
+      }
+    </div>
+
+    <aside class="analytics-dashboard__aside" aria-label="تصدير وأرشفة">
+      <app-export-panel
+        [caseId]="(selectedCaseId$ | async) ?? null"
+        (archiveRequested)="archiveCase($event)" />
+    </aside>
+  </div>
+</div>

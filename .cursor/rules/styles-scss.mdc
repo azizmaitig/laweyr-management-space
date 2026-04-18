@@ -1,0 +1,12 @@
+---
+description: SCSS conventions (tokens, nesting, component styles)
+globs: **/*.scss
+alwaysApply: false
+---
+
+# SCSS conventions
+
+- Keep selectors **component-scoped** and readable (often BEM-like: `.users-admin__grid`, etc.).
+- Avoid deep nesting; nest only for pseudo states / small subtrees.
+- Prefer design tokens and global utility classes from `src/styles.scss` when appropriate (CSS variables like `var(--clr-*)`, `var(--space-*)`, `var(--radius-*)`).
+- Keep responsive rules close to the component block (repo pattern uses `@media` near the relevant selectors).

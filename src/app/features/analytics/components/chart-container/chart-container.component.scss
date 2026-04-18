@@ -1,0 +1,19 @@
+.chart-card {
+  background: var(--analytics-surface, #ffffff);
+  border: 1px solid var(--analytics-border, #e8eaed);
+  border-radius: 16px;
+  padding: 1.1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  height: 100%;
+}
+
+.chart-card__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem;
+  color: var(--analytics-text, #1a1d23);
+}
+
+.chart-card__body {
+  min-height: 120px;
+}

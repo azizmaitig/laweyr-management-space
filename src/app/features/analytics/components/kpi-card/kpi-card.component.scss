@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.kpi {
+  background: var(--analytics-surface, #ffffff);
+  border: 1px solid var(--analytics-border, #e8eaed);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.kpi__label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--analytics-muted, #9ca3af);
+  margin-bottom: 0.35rem;
+}
+
+.kpi__value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--analytics-text, #1a1d23);
+}
+
+.kpi__suffix {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-inline-start: 0.15rem;
+  color: var(--analytics-muted, #9ca3af);
+}
+
+.kpi--teal .kpi__value {
+  color: #0d9488;
+}
+.kpi--green .kpi__value {
+  color: #16a34a;
+}
+.kpi--blue .kpi__value {
+  color: #3b82f6;
+}
+.kpi--amber .kpi__value {
+  color: #f59e0b;
+}
+.kpi--indigo .kpi__value {
+  color: #6366f1;
+}

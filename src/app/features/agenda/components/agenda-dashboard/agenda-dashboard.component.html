@@ -1,0 +1,191 @@
+<div class="agenda-dashboard">
+  <header class="agenda-header">
+    <div class="agenda-header-title">
+      <h1>Agenda juridique</h1>
+      <p>Planification, alertes et suivi des actions en une seule vue.</p>
+    </div>
+    <span class="agenda-total-badge">{{ (activeCount$ | async) ?? 0 }}</span>
+  </header>
+
+  <section class="agenda-topbar">
+    <div class="agenda-topbar-left">
+      <div class="view-segmented" role="tablist" aria-label="Vue agenda">
+        <button
+          type="button"
+          class="view-segment-btn"
+          [class.active]="view === 'month'"
+          (click)="currentView.set('month')">
+          Mois
+        </button>
+        <button
+          type="button"
+          class="view-segment-btn"
+          [class.active]="view === 'week'"
+          (click)="currentView.set('week')">
+          Semaine
+        </button>
+      </div>
+      <h2 class="agenda-period-label">
+        {{ view === 'month' ? (monthName$ | async) ?? '' : (weekRangeLabel$ | async) ?? '' }}
+      </h2>
+      <button mat-icon-button (click)="navigateMonth(-1)" matTooltip="Précédent">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <button mat-icon-button (click)="navigateMonth(1)" matTooltip="Suivant">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+
+    <div class="agenda-topbar-right">
+      <button mat-stroked-button class="today-btn" (click)="goToToday()">
+        <mat-icon>today</mat-icon>
+        Aujourd'hui
+      </button>
+      <button mat-flat-button color="warn" (click)="addAgendaItem()">
+        <mat-icon>add</mat-icon>
+        Ajouter
+      </button>
+    </div>
+
+    <div class="agenda-topbar-filters">
+      @if (activeFilters$ | async; as filters) {
+        <button
+          type="button"
+          class="type-pill all-pill"
+          [class.active]="filters.size === 0"
+          (click)="clearFilters()">
+          <span class="pill-dot all-dot"></span>
+          Tout
+        </button>
+        @for (type of agendaItemTypes; track type) {
+          <button
+            type="button"
+            class="type-pill"
+            [class.active]="hasFilter(filters, type)"
+            [style.--pill-color]="typeColor(type)"
+            (click)="toggleFilter(type)">
+            <span class="pill-dot" [style.background]="typeColor(type)"></span>
+            {{ type === 'SESSION' ? 'Session' : type === 'TASK_DEADLINE' ? 'Tache' : type === 'LEGAL_DEADLINE' ? 'Legale' : 'Autre' }}
+          </button>
+        }
+      }
+    </div>
+  </section>
+
+  <section class="agenda-kpi-grid">
+    <article class="kpi-card">
+      <p>Éléments actifs</p>
+      <h3>{{ (activeCount$ | async) ?? 0 }}</h3>
+    </article>
+    <article class="kpi-card">
+      <p>Sessions</p>
+      <h3>{{ ((statsSummary$ | async) ?? statsFallback).sessions }}</h3>
+    </article>
+    <article class="kpi-card">
+      <p>Échéances</p>
+      <h3>{{ ((statsSummary$ | async) ?? statsFallback).deadlines }}</h3>
+    </article>
+    <article class="kpi-card">
+      <p>Cette semaine</p>
+      <h3>{{ ((weekItems$ | async) ?? []).length }}</h3>
+    </article>
+  </section>
+
+  <!-- Loading -->
+  @if (agendaLoading$ | async; as loading) {
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+    }
+  }
+  @if (reminderLoading$ | async; as rLoading) {
+    @if (rLoading) {
+      <mat-progress-bar mode="indeterminate" class="loading-bar"></mat-progress-bar>
+    }
+  }
+
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <!-- MAIN 3-COLUMN LAYOUT                                      -->
+  <!-- ═══════════════════════════════════════════════════════════ -->
+  <div class="main-layout">
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- LEFT PANEL: Today + Alerts + Quick Actions                -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <aside class="left-panel">
+      <div class="side-panel-shell">
+        <app-reminder-list
+          [todayItems]="(todayItems$ | async) ?? []"
+          [criticalDeadlines]="(criticalDeadlines$ | async) ?? []"
+          [overdueItems]="(overdueItems$ | async) ?? []"
+          [pendingReminders]="pendingReminders$ | async"
+          [deadlineAlerts]="(deadlineAlerts$ | async) ?? []"
+          [hasCriticalAlert]="(hasCriticalAlert$ | async) ?? false"
+          (completeItem)="completeItem($event)"
+          (dismissReminder)="dismissReminder($event)"
+          (dismissDeadlineAlert)="_dismissDeadlineAlert($event)"
+          (addItem)="addAgendaItem()"
+          (goToToday)="goToToday()"
+          (clearFilters)="clearFilters()">
+        </app-reminder-list>
+      </div>
+    </aside>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- CENTER PANEL: Calendar                                    -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <main class="center-panel">
+      <section class="agenda-focus">
+        <div class="agenda-focus-header">
+          <div>
+            <h3>Agenda principal</h3>
+            <p>Vue centralisee des audiences, echeances et actions planifiees.</p>
+          </div>
+          <span class="agenda-focus-badge">
+            {{ view === 'month' ? 'Vue mensuelle' : 'Vue hebdomadaire' }}
+          </span>
+        </div>
+
+        <div class="agenda-focus-calendar">
+          <app-calendar-view
+            [showToolbar]="false"
+            [view]="currentView()"
+            [monthGrid]="(monthGrid$ | async) ?? [[]]"
+            [weekGrid]="(weekGrid$ | async) ?? []"
+            [periodLabel]="view === 'month' ? (monthName$ | async) ?? '' : (weekRangeLabel$ | async) ?? ''"
+            [hasCriticalAlert]="(hasCriticalAlert$ | async) ?? false"
+            (viewChange)="currentView.set($event)"
+            (navigate)="navigateMonth($event)"
+            (today)="goToToday()"
+            (add)="addAgendaItem()"
+            (openItem)="openItemDetail($event)"
+            (itemDropped)="onItemDropped($event.item, $event.newDate)">
+          </app-calendar-view>
+        </div>
+
+        @if (selectedAgendaItem(); as selected) {
+          <div class="selected-item-panel">
+            <app-agenda-item-card
+              [item]="selected"
+              (open)="openItemDetail($event)"
+              (complete)="completeItem($event)">
+            </app-agenda-item-card>
+          </div>
+        }
+      </section>
+    </main>
+
+    <!-- ───────────────────────────────────────────────────────── -->
+    <!-- RIGHT PANEL: Filters + Summary + Reminders                -->
+    <!-- ───────────────────────────────────────────────────────── -->
+    <aside class="right-panel">
+      <div class="side-panel-shell">
+        <app-filter-panel
+          [upcomingSessions]="upcomingSessions$ | async"
+          [pendingReminders]="pendingReminders$ | async"
+          (dismissReminder)="dismissReminder($event)">
+        </app-filter-panel>
+      </div>
+    </aside>
+
+  </div><!-- /main-layout -->
+</div>

@@ -1,0 +1,45 @@
+.empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--analytics-muted, #9ca3af);
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(72px, 100px) 1fr 56px;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bar-row__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--analytics-secondary, #6b7280);
+}
+
+.bar-row__track {
+  height: 8px;
+  background: var(--analytics-bg, #f4f5f7);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar-row__fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #0d9488, #14b8a6);
+  transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bar-row__value {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--analytics-muted, #9ca3af);
+  text-align: left;
+}

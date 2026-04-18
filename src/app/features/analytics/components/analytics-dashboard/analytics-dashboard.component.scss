@@ -1,0 +1,240 @@
+.analytics-dashboard {
+  --analytics-text: #1a1d23;
+  --analytics-muted: #9ca3af;
+  --analytics-secondary: #6b7280;
+  --analytics-border: #e8eaed;
+  --analytics-surface: #ffffff;
+  --analytics-bg: #f4f5f7;
+
+  font-family: 'Cairo', system-ui, sans-serif;
+  color: var(--analytics-text);
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.analytics-dashboard__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.analytics-dashboard__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.analytics-dashboard__sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--analytics-muted);
+  line-height: 1.5;
+}
+
+.analytics-dashboard__sub code {
+  font-size: 0.7rem;
+  background: var(--analytics-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
+
+.analytics-dashboard__refresh {
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--analytics-border);
+  background: var(--analytics-surface);
+  cursor: pointer;
+}
+
+.analytics-dashboard__refresh:hover {
+  background: var(--analytics-bg);
+}
+
+.analytics-dashboard__filter-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  padding: 0.65rem 1rem;
+  margin-bottom: 1rem;
+  background: #ecfdf5;
+  border: 1px solid #99f6e4;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  color: var(--analytics-secondary);
+}
+
+.analytics-dashboard__filter-text {
+  min-width: 0;
+}
+
+.analytics-dashboard__filter-banner strong {
+  color: var(--analytics-text);
+  margin-inline: 0.25rem;
+}
+
+.analytics-dashboard__filter-banner code {
+  font-size: 0.68rem;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+}
+
+.analytics-dashboard__filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.analytics-dashboard__filter-link {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f766e;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.analytics-dashboard__filter-link:hover {
+  text-decoration: underline;
+}
+
+.analytics-dashboard__filter-clear {
+  border: none;
+  background: transparent;
+  color: #0f766e;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.analytics-dashboard__filter-clear:hover {
+  color: #0d5c56;
+}
+
+.analytics-dashboard__grid {
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.section {
+  margin-bottom: 1.25rem;
+}
+
+.section--kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.section--charts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.section--bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.muted {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--analytics-muted);
+}
+
+.overdue-list,
+.activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.overdue-list__item,
+.activity-list__item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--analytics-border);
+  font-size: 0.78rem;
+}
+
+.overdue-list__item:last-child,
+.activity-list__item:last-child {
+  border-bottom: none;
+}
+
+.overdue-list__main {
+  flex: 1 1 160px;
+  font-weight: 600;
+}
+
+.overdue-list__amt {
+  font-weight: 800;
+  color: #0d9488;
+}
+
+.overdue-list__due {
+  font-size: 0.72rem;
+  color: var(--analytics-muted);
+}
+
+.activity-list__date {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.68rem;
+  color: var(--analytics-muted);
+  min-width: 88px;
+}
+
+.activity-list__title {
+  flex: 1;
+  font-weight: 700;
+}
+
+.activity-list__detail {
+  width: 100%;
+  font-size: 0.72rem;
+  color: var(--analytics-secondary);
+  line-height: 1.35;
+}
+
+@media (max-width: 1100px) {
+  .analytics-dashboard__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-dashboard__aside {
+    order: -1;
+  }
+
+  .section--kpis {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .section--charts {
+    grid-template-columns: 1fr;
+  }
+
+  .section--bottom {
+    grid-template-columns: 1fr;
+  }
+}

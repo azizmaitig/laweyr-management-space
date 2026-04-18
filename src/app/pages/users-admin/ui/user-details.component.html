@@ -1,0 +1,33 @@
+<section class="panel">
+  @if (user; as selected) {
+    <header class="panel__head">
+      <h3>User Details</h3>
+      <span class="id">#{{ selected.id }}</span>
+    </header>
+
+    <div class="field">
+      <label>Name</label>
+      <div class="value">{{ selected.name }}</div>
+    </div>
+    <div class="field">
+      <label>Email</label>
+      <div class="value">{{ selected.email }}</div>
+    </div>
+
+    <div class="field">
+      <label>Role</label>
+      <select class="input" [ngModel]="selected.role" (ngModelChange)="roleChanged.emit($event)">
+        @for (role of roles; track role) {
+          <option [ngValue]="role">{{ roleLabel(role) }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Assigned Cases</label>
+      <div class="value muted">Optional mapping can be linked from case-assignment workflow.</div>
+    </div>
+  } @else {
+    <div class="empty">Select a user to view details.</div>
+  }
+</section>

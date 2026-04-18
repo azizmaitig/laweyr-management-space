@@ -1,0 +1,52 @@
+<section class="panel">
+  <header class="panel__head">
+    <h3>Permissions Matrix</h3>
+    <button type="button" class="save-btn" [disabled]="!user" (click)="save()">Save</button>
+  </header>
+
+  @if (user) {
+    <div class="table-wrap">
+      <table class="matrix">
+        <thead>
+          <tr>
+            <th>Resource</th>
+            @for (action of actions; track action) {
+              <th>{{ action }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (resource of resources; track resource) {
+            <tr>
+              <th>{{ resource }}</th>
+              @for (action of actions; track action) {
+                <td class="cell">
+                  <label class="toggle">
+                    <input
+                      type="checkbox"
+                      [checked]="isOn(resource, action)"
+                      (change)="toggle(resource, action)"
+                    />
+                    <span>{{ isOn(resource, action) ? 'ON' : 'OFF' }}</span>
+                  </label>
+                  <select
+                    class="scope"
+                    [disabled]="!isOn(resource, action)"
+                    [value]="scopeFor(resource, action)"
+                    (change)="setScope(resource, action, $any($event.target).value)"
+                  >
+                    @for (scope of scopes; track scope) {
+                      <option [value]="scope">{{ scope }}</option>
+                    }
+                  </select>
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else {
+    <div class="empty">Select a user to edit permissions.</div>
+  }
+</section>

@@ -1,0 +1,20 @@
+---
+description: Angular template conventions (control flow, signals, formatting)
+globs: **/*.html
+alwaysApply: false
+---
+
+# Angular templates
+
+- Use Angular v21 **control flow** syntax (`@if`, `@for`, …) where the repo already uses it (see `App` template).
+- Treat signals as functions in templates (`selectedUser()`, `users()`); don’t read `.value`.
+- Prefer “thin templates”: avoid complex inline logic; move computations to `computed()` or component methods.
+- Keep inputs/outputs explicit and readable (one binding per line when it improves clarity).
+
+## Formatting
+
+- Prettier HTML parser is `angular`; keep formatting stable (don’t fight auto-format).
+
+## Accessibility basics
+
+- Keep interactive elements semantic (`button` for actions); if using non-semantic elements, add keyboard + ARIA support.
